@@ -1,10 +1,7 @@
-import { ActionPanel, Action, Icon, List, showToast, Toast, Color, getPreferenceValues } from "@raycast/api";
+import { ActionPanel, Action, Icon, List, showToast, Toast, getPreferenceValues } from "@raycast/api";
 import { useEffect, useState } from "react";
-import { useMemo } from "react";
 
-let API_URL = "https://meowfacts.herokuapp.com/";
-const MAX_RETRIES = 3;
-
+const API_URL = "https://meowfacts.herokuapp.com/";
 interface Preferences {
   factCount: string;
   language: string;
@@ -12,10 +9,9 @@ interface Preferences {
 
 export default function Command() {
   const preferences = getPreferenceValues<Preferences>();
-  const [data, setData] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [favorites, setFavorites] = useState<any[]>([]);
+  const [data, setData] = useState<string[] | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   useEffect(() => {
     fetchFacts();
@@ -27,13 +23,12 @@ export default function Command() {
     const lang = preferences.language;
     const url = API_URL + "?count=" + count + (lang ? "&lang=" + lang : "");
     fetch(url)
-      .then((res) => res.json())
-      .then((json: any) => {
+      .then((res) => res.json() as Promise<{ data: string[] }>)
+      .then((json) => {
         setData(json.data);
         setIsLoading(false);
       })
       .catch((error) => {
-        setError(error.message);
         setIsLoading(false);
         showToast({
           style: Toast.Style.Failure,
@@ -43,7 +38,7 @@ export default function Command() {
       });
   }
 
-  const toggleFavorite = (fact: any) => {
+  const toggleFavorite = (fact: string) => {
     if (favorites.includes(fact)) {
       setFavorites(favorites.filter((f) => f !== fact));
     } else {
@@ -56,7 +51,7 @@ export default function Command() {
       {!data && <List.EmptyView title="No facts" />}
 
       {data &&
-        data.map((fact: any, idx: number) => {
+        data.map((fact: string, idx: number) => {
           const isFav = favorites.includes(fact);
           return (
             <List.Item
