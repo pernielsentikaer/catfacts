@@ -5,8 +5,13 @@ import { useMemo } from "react";
 let API_URL = "https://meowfacts.herokuapp.com/";
 const MAX_RETRIES = 3;
 
+interface Preferences {
+  factCount: string;
+  language: string;
+}
+
 export default function Command() {
-  const preferences = getPreferenceValues<{ factCount: string; language: string }>();
+  const preferences = getPreferenceValues<Preferences>();
   const [data, setData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,10 +32,14 @@ export default function Command() {
         setData(json.data);
         setIsLoading(false);
       })
-      .catch((e) => {
-        setError("Error happened");
+      .catch((error) => {
+        setError(error.message);
         setIsLoading(false);
-        console.log(e);
+        showToast({
+          style: Toast.Style.Failure,
+          title: "Failed to fetch cat facts",
+          message: error.message,
+        });
       });
   }
 
