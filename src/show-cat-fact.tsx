@@ -7,55 +7,52 @@ const MAX_RETRIES = 3;
 
 export default function Command() {
   const preferences = getPreferenceValues<{ factCount: string; language: string }>();
-  const [data, setdata] = useState<any>(null);
-  const [l, setL] = useState(true);
-  const [err, seterr] = useState("");
-  const [fav, setFav] = useState<any[]>([]);
-  const retryCount = 0;
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [favorites, setFavorites] = useState<any[]>([]);
 
   useEffect(() => {
     fetchFacts();
-  });
+  }, []);
 
   function fetchFacts() {
-    setL(true);
+    setIsLoading(true);
     const count = preferences.factCount ? parseInt(preferences.factCount) : 5;
     const lang = preferences.language;
     const url = API_URL + "?count=" + count + (lang ? "&lang=" + lang : "");
     fetch(url)
       .then((res) => res.json())
       .then((json: any) => {
-        setdata(json.data);
-        setL(false);
+        setData(json.data);
+        setIsLoading(false);
       })
       .catch((e) => {
-        seterr("Error happened");
-        setL(false);
+        setError("Error happened");
+        setIsLoading(false);
         console.log(e);
       });
   }
 
   const toggleFavorite = (fact: any) => {
-    if (fav.includes(fact)) {
-      setFav(fav.filter((f) => f !== fact));
+    if (favorites.includes(fact)) {
+      setFavorites(favorites.filter((f) => f !== fact));
     } else {
-      setFav([...fav, fact]);
+      setFavorites([...favorites, fact]);
     }
   };
 
-  const factCount = data ? data.length : 0;
-
   return (
-    <List isLoading={l} searchBarPlaceholder="Search cat facts...">
+    <List isLoading={isLoading} searchBarPlaceholder="Search cat facts...">
       {!data && <List.EmptyView title="No facts" />}
 
       {data &&
         data.map((fact: any, idx: number) => {
-          const isFav = fav.includes(fact);
+          const isFav = favorites.includes(fact);
           return (
             <List.Item
               key={idx}
-              icon={Icon.Circle}
+              icon="🐈"
               title={fact}
               accessories={[{ icon: isFav ? Icon.Star : Icon.StarDisabled }]}
               actions={
